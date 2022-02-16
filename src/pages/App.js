@@ -1,31 +1,47 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import { StyleSheet, View, Text, Image } from 'react-native';
 import { Card, Header, Button } from 'react-native-elements';
 import Deck from './Deck';
 import DATA from '../../data'
 
-class App extends React.Component {
+export default function App() {
+  const [data, setData] = useState(DATA)
+  const [rightCounter, setRightCounter] = useState(0)
+  const [leftCounter, setLeftCounter] = useState(0)
+
   state = {
     data: DATA,
     rightCounter: 0,
     leftCounter: 0
   };
 
-  resetDeck() {
-    this.setState({ 
-      data: [...DATA]});
-      this.setState({rightCounter: 0})
-      this.setState({leftCounter: 0})
+  const resetDeck = () => {
+    setData({data: [...DATA]})
+    setRightCounter({rightCounter: 0})
+    setLeftCounter({leftCounter: 0})
+    // this.setState({ 
+    //   data: [...DATA]});
+    //   this.setState({rightCounter: 0})
+    //   this.setState({leftCounter: 0})
     }
 
-  updateCounters(direction /*, item */) {
+  const updateCounters = (direction /*, item */) => {
     if (direction === 'right') {
-      return this.setState({ rightCounter: this.state.rightCounter + 1 });
+      return setRightCounter(rightCounter + 1);
     }
-    return this.setState({ leftCounter: this.state.leftCounter + 1 });
+    return (
+      setLeftCounter( leftCounter + 1 )
+
+    ) 
   }
 
-  renderCard(item) {
+  const changeCounterColor = () => {
+    const interval = setInterval(() => {
+      leftCounter ? styles.counterView : styles.counterView
+    }, 2000);
+    return () => clearInterval(interval)
+  }
+  const renderCard = (item) => {
     // return (
     //   <Card
     //     key={item.id}
@@ -38,7 +54,7 @@ class App extends React.Component {
     // );
   }
 
-  renderNoMoreCards() {
+  const renderNoMoreCards = () => {
     return (
       <View style={styles.noMoreCardsContainer}>
         <Text style={[styles.text, styles.noMoreCardsText]}>All Done!</Text>
@@ -47,42 +63,40 @@ class App extends React.Component {
     );
   }
 
-  renderCounters() {
+  renderCounters = () => {
     return (
       <View style={styles.countersContainer}>
         <View style={styles.counterView}>
-          <Text style={styles.text}>{this.state.leftCounter}</Text>
+          <Text style={styles.text}>{leftCounter}</Text>
         </View>
         <View style={styles.counterView}>
-          <Text style={styles.text}>{this.state.rightCounter}</Text>
+          <Text style={styles.text}>{rightCounter}</Text>
         </View>
       </View>
     );
   }
 
-  render() {
     return (
       <View style={styles.container}>
         <Header 
-        backgroundColor="#5f9ea0" 
+        backgroundColor="#000" 
         centerComponent={{ 
-          text: 'Relationship Rules', 
+          text: 'Yo Mama Jokes', 
           style: [styles.text, { color: '#fff' } ]}} 
           />
         <View style={styles.deckView}>
           <Deck
-            data={this.state.data}
-            renderCard={this.renderCard}
-            renderNoMoreCards={this.renderNoMoreCards}
-            resetDeck={this.resetDeck.bind(this)}
-            onSwipeRight={this.updateCounters.bind(this, 'right')}
-            onSwipeLeft={this.updateCounters.bind(this, 'left')}
+            data={data}
+            renderCard={renderCard()}
+            renderNoMoreCards={renderNoMoreCards()}
+            resetDeck={resetDeck.bind(this)}
+            onSwipeRight={updateCounters.bind(this, 'right')}
+            onSwipeLeft={updateCounters.bind(this, 'left')}
           />
         </View>
-        {this.renderCounters()}
+        {renderCounters()}
       </View>
     );
-  }
 }
 
 const styles = StyleSheet.create({
@@ -106,7 +120,19 @@ const styles = StyleSheet.create({
     marginHorizontal: 50,
     borderWidth: 8,
     borderRadius: 50,
-    borderColor: '#5f9ea0',
+    borderColor: '#000',
+    alignItems: 'center',
+    justifyContent: 'center', 
+    bottom: 0
+  },
+  counterViewLeft: {
+    width: 80,
+    height: 80,
+    marginVertical: 10,
+    marginHorizontal: 50,
+    borderWidth: 8,
+    borderRadius: 50,
+    borderColor: 'red',
     alignItems: 'center',
     justifyContent: 'center', 
     bottom: 0
@@ -121,4 +147,3 @@ const styles = StyleSheet.create({
   }
 });
 
-export default App;
