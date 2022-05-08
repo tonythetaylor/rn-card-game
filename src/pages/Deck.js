@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Component } from 'react';
 import { View, Animated, PanResponder, Dimensions, StyleSheet, UIManager, LayoutAnimation, Image, Text, ImageBackground } from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -6,16 +6,15 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.1;
 const SWIPE_OUT_DURATION = 250;
 
-const Deck = (props) => {
-  const defaultProps = {
+class Deck extends Component {
+  static defaultProps = {
     onSwipeRight: () => {},
     onSwipeLeft: () => {}
   };
-  const { data, onSwipeRight} = props
 
+  constructor(props) {
+    super(props);
 
-  constructor = (props) => {
-    // super(props);
     this.position = new Animated.ValueXY();
     this.panResponder = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -24,51 +23,39 @@ const Deck = (props) => {
       },
       onPanResponderRelease: (event, gesture) => {
         if (gesture.dx < -SWIPE_THRESHOLD) {
-          forceSwipe('left');
+          this.forceSwipe('left');
         } else if (gesture.dx > SWIPE_THRESHOLD) {
-          forceSwipe('right');
+          this.forceSwipe('right');
         } else {
-          resetPosition();
+          this.resetPosition();
         }
       }
     });
     this.state = { index: 0 };
   }
 
-  // componentDidUpdate = (nextProps) => {
-  //   if (this.state.index !== data.length) {
-  //     // Android only
-  //     UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
-  //     LayoutAnimation.spring(); // Animate any layout changes
-  //   }
-
-  //   if (nextProps.data !== data) {
-  //     this.setState({ index: 0 });
-  //   }
-  // }
-
-  useEffect(() => {
-    if (this.state.index !== data.length) {
+  componentDidUpdate(nextProps) {
+    if (this.state.index !== this.props.data.length) {
       // Android only
       UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
       LayoutAnimation.spring(); // Animate any layout changes
     }
 
-    if (nextProps.data !== data) {
+    if (nextProps.data !== this.props.data) {
       this.setState({ index: 0 });
     }
-  }, []);
+  }
 
-  const forceSwipe = (direction) => {
+  forceSwipe(direction) {
     const x = direction === 'right' ? SCREEN_WIDTH : -SCREEN_WIDTH;
     Animated.timing(this.position, {
       toValue: { x, y: 0 },
       duration: SWIPE_OUT_DURATION,
       useNativeDriver: false
-    }).start(onSwipeComplete.bind(this, direction));
+    }).start(this.onSwipeComplete.bind(this, direction));
   }
 
-  const onSwipeComplete = (direction) => {
+  onSwipeComplete(direction) {
     const { data, onSwipeLeft, onSwipeRight } = this.props;
     const item = data[this.state.index];
     direction === 'left' ? onSwipeLeft(item) : onSwipeRight(item);
@@ -77,14 +64,14 @@ const Deck = (props) => {
     this.setState({ index: this.state.index + 1 });
   }
 
-  const resetPosition = () => {
+  resetPosition() {
     Animated.spring(this.position, {
       toValue: { x: 0, y: 0 },
       useNativeDriver: false
     }).start();
   }
 
-  const getCardStyle = () => {
+  getCardStyle() {
     const rotate = this.position.x.interpolate({
       inputRange: [-SCREEN_WIDTH * 2, 0, SCREEN_WIDTH * 2],
       outputRange: ['-120deg', '0deg', '120deg']
@@ -99,10 +86,14 @@ const Deck = (props) => {
     };
   }
 
-  const renderCard = () => {
-    const { data } = props;
+  renderCard() {
+    const { data } = this.props;
     const { index } = this.state;
 
+    // console.log('in the deck', data, index)
+    // shuffle the cards
+    shuffle = data[Math.floor(Math.random() * data.length)];
+    
     const generateColor = (item) => {
       const randomColor = Math.floor(Math.random() * 14577215)
         .toString(8)
@@ -111,28 +102,27 @@ const Deck = (props) => {
           return `#${randomColor}`;
         }
     };
-
+    
     if (index >= data.length) {
       return this.props.renderNoMoreCards();
     }
 
     return data
       .map((item, itemIndex) => {
-        const randomItem = data[Math.floor(Math.random() * data.length)]
         if (itemIndex < index) return null;
         if (itemIndex === index) {
           return (
             <Animated.View 
               key={item.id} 
               style={[
-                getCardStyle(), styles.card]} 
+                this.getCardStyle(), styles.card]} 
                 {...this.panResponder.panHandlers}>
               <ImageBackground 
                 // source={item.uri} 
                 resizeMode="cover" 
                 style={styles.image}
-                imageStyle={{ borderRadius: 20, backgroundColor: '#000'}}>
-                    <Text style={styles.imageText}>{randomItem.text}</Text>
+                imageStyle={{ borderRadius: 20, backgroundColor: '#5f9ea0'}}>
+                    <Text style={styles.imageText}>{shuffle.text}</Text>
               </ImageBackground>
               {/* {this.props.renderCard(item)} */}
             </Animated.View>
@@ -151,7 +141,7 @@ const Deck = (props) => {
               // source={item.uri} 
               resizeMode="cover" 
               style={styles.image}
-              imageStyle={{ borderRadius: 20, backgroundColor: '#000'}} />
+              imageStyle={{ borderRadius: 20, backgroundColor: '#5f9ea0'}} />
             {/* {this.props.renderCard(item)} */}
           </Animated.View>
         );
@@ -159,7 +149,9 @@ const Deck = (props) => {
       .reverse();
   }
 
-    return ( <View>{renderCard()}</View> );
+  render() {
+    return <View>{this.renderCard()}</View>;
+  }
 }
 
 const styles = StyleSheet.create({
@@ -195,4 +187,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Deck
+export default Deck;
